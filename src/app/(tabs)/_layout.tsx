@@ -24,6 +24,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: COLORS.mutedText,
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabLabel,
+        tabBarItemStyle: styles.tabBarItem,
       }}
     >
       {/* 1. DISCOVER */}
@@ -34,7 +35,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'flame' : 'flame-outline'}
-              size={24}
+              size={23}
               color={color}
             />
           ),
@@ -49,7 +50,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'search' : 'search-outline'}
-              size={23}
+              size={22}
               color={color}
             />
           ),
@@ -66,7 +67,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'heart' : 'heart-outline'}
-              size={24}
+              size={23}
               color={color}
             />
           ),
@@ -83,7 +84,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
-              size={23}
+              size={22}
               color={color}
             />
           ),
@@ -98,7 +99,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'person' : 'person-outline'}
-              size={23}
+              size={22}
               color={color}
             />
           ),
@@ -113,19 +114,32 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderTopWidth: 1,
     borderTopColor: '#F5E6EC',
-    height: Platform.OS === 'ios' ? 88 : 65,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 10,
-    paddingTop: 8,
+    height: Platform.OS === 'ios' ? 88 : 64,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 6,
+    paddingTop: 6,
     ...SHADOWS.sm,
+  },
+  tabBarItem: {
+    paddingVertical: 2,
+    ...(Platform.OS === 'web'
+      ? ({
+          outline: 'none',
+          WebkitTapHighlightColor: 'transparent',
+        } as any)
+      : {}),
   },
   tabLabel: {
     fontSize: 11,
     fontWeight: '700',
+    marginTop: 2,
+    marginBottom: 2,
   },
   badge: {
     backgroundColor: COLORS.primary,
     fontSize: 10,
     fontWeight: '800',
     color: COLORS.white,
+    minWidth: 18,
+    height: 18,
   },
 });

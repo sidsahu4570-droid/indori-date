@@ -8,6 +8,23 @@ import { ChatProvider } from '../context/ChatContext';
 import { NotificationBanner } from '../components/common/NotificationBanner';
 import { MatchCelebrationModal } from '../components/matches/MatchCelebrationModal';
 
+import { Platform } from 'react-native';
+
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = `
+    *:focus, *:focus-visible {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    * {
+      -webkit-tap-highlight-color: transparent !important;
+      user-select: none;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 function RootNavigation() {
   const { matchCelebration, clearMatchCelebration } = useMatch();
 
