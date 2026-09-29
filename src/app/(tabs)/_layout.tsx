@@ -1,0 +1,131 @@
+import React from 'react';
+import { Tabs } from 'expo-router';
+import { View, StyleSheet, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, SHADOWS } from '../../constants/theme';
+import { useMatch } from '../../context/MatchContext';
+import { useChat } from '../../context/ChatContext';
+
+export default function TabLayout() {
+  const { matches, connectionRequests } = useMatch();
+  const { messages } = useChat();
+
+  const totalMatchesCount = matches.length + connectionRequests.length;
+  const unreadMessagesCount = Object.values(messages).reduce(
+    (acc, list) => acc + list.filter((m) => !m.isRead && m.senderId !== 'current_user_id').length,
+    0
+  );
+
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.mutedText,
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabLabel,
+      }}
+    >
+      {/* 1. DISCOVER */}
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Discover',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'flame' : 'flame-outline'}
+              size={24}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      {/* 2. SEARCH */}
+      <Tabs.Screen
+        name="search"
+        options={{
+          title: 'Search',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'search' : 'search-outline'}
+              size={23}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      {/* 3. MATCHES */}
+      <Tabs.Screen
+        name="matches"
+        options={{
+          title: 'Matches',
+          tabBarBadge: totalMatchesCount > 0 ? totalMatchesCount : undefined,
+          tabBarBadgeStyle: styles.badge,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'heart' : 'heart-outline'}
+              size={24}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      {/* 4. MESSAGES */}
+      <Tabs.Screen
+        name="messages"
+        options={{
+          title: 'Messages',
+          tabBarBadge: unreadMessagesCount > 0 ? unreadMessagesCount : undefined,
+          tabBarBadgeStyle: styles.badge,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
+              size={23}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      {/* 5. PROFILE */}
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'person' : 'person-outline'}
+              size={23}
+              color={color}
+            />
+          ),
+        }}
+      />
+    </Tabs>
+  );
+}
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: COLORS.white,
+    borderTopWidth: 1,
+    borderTopColor: '#F5E6EC',
+    height: Platform.OS === 'ios' ? 88 : 65,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 10,
+    paddingTop: 8,
+    ...SHADOWS.sm,
+  },
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  badge: {
+    backgroundColor: COLORS.primary,
+    fontSize: 10,
+    fontWeight: '800',
+    color: COLORS.white,
+  },
+});

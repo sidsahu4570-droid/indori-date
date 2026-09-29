@@ -1,0 +1,129 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.admin == true || 
+         request.auth.token.email == 'admin@indoridate.com');
+    }
+
+    // App Settings: readable by all authenticated users, writable only by admins
+    match /appSettings/{document} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Users & Profiles
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    match /profiles/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // Likes & Passes
+    match /likes/{likeId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.fromUserId == request.auth.uid || resource.data.toUserId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.fromUserId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.fromUserId == request.auth.uid;
+    }
+
+    match /passes/{passId} {
+      allow read, write: if isAuthenticated() && request.resource.data.fromUserId == request.auth.uid;
+    }
+
+    // Matches & Connection Requests
+    match /matches/{matchId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.users.hasAny([request.auth.uid]) || isAdmin());
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && resource.data.users.hasAny([request.auth.uid]);
+    }
+
+    match /connectionRequests/{requestId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.senderId == request.auth.uid;
+      allow update: if isAuthenticated() && 
+        (resource.data.receiverId == request.auth.uid || resource.data.senderId == request.auth.uid);
+      allow delete: if isAuthenticated() && 
+        (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid);
+    }
+
+    // Real-Time Chat & Conversations
+    match /conversations/{conversationId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.participantIds.hasAny([request.auth.uid]) || isAdmin());
+      allow create: if isAuthenticated() && 
+        request.resource.data.participantIds.hasAny([request.auth.uid]);
+      allow update: if isAuthenticated() && 
+        resource.data.participantIds.hasAny([request.auth.uid]);
+    }
+
+    match /messages/{messageId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.senderId == request.auth.uid;
+      allow update: if isAuthenticated() && 
+        (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid);
+    }
+
+    // Subscriptions & Payments
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+    }
+
+    // Safety: Reports & Blocks
+    match /reports/{reportId} {
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.reporterId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.reporterId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /blocks/{blockId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || resource.data.blockedUserId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Verification Requests
+    match /verificationRequests/{requestId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read, update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+    }
+  }
+}
